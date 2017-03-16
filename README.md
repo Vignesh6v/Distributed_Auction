@@ -3,7 +3,7 @@ DistributedAuction
 
 A distributed system application to conduct auctions in real-time for determining prices of services (like car rental, hotel rental etc) or products.
 
-System Architecture: 
+System Architecture
 
     * Independent clusters for each type of service<br/>
     * RESTful communication pattern between each component<br/>
