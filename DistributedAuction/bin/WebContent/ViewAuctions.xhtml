@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core">
+
+
+<h:head>
+	<meta content="text/html; charset=UTF-8" http-equiv="Content-type" />
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet"
+		href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"></link>
+	<h:outputStylesheet library="css" name="misc.css" />
+</h:head>
+
+<h:body>
+	<h:form id="homeForm">
+		<p:layout id="layout" fullPage="true">
+			<p:layoutUnit position="north" size="50">
+				<!-- Fixed navbar -->
+				<h:panelGroup layout="block"
+					styleClass="navbar navbar-default navbar-fixed-top">
+					<h:panelGroup layout="block" styleClass="container">
+						<h:panelGroup layout="block" styleClass="navbar-header">
+							<button type="button" class="navbar-toggle">
+								<h:panelGroup class="sr-only">Toggle navigation</h:panelGroup>
+								<h:panelGroup class="icon-bar"></h:panelGroup>
+								<h:panelGroup class="icon-bar"></h:panelGroup>
+								<h:panelGroup class="icon-bar"></h:panelGroup>
+							</button>
+							<p:commandButton styleClass="navbar-brand buttonAsLink"
+								value="BestDeals"></p:commandButton>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="navbar-collapse collapse">
+							<ul class="nav navbar-nav">
+								<li><p:commandButton styleClass="buttonAsLink" value="Home"
+										action="goHome"></p:commandButton></li>
+								<li><p:commandButton styleClass="buttonAsLink"
+										action="viewAuctions" value="My Auctions" immediate="true"></p:commandButton></li>
+								<li><p:commandButton styleClass="buttonAsLink"
+										action="viewSubscriptions" value="My Subscriptions"
+										immediate="true"></p:commandButton></li>
+							</ul>
+							<ul class="nav navbar-nav navbar-right">
+								<li><h:commandLink href="#">Logout</h:commandLink></li>
+							</ul>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</p:layoutUnit>
+			<p:layoutUnit position="west" resizable="true">
+				<h:panelGroup layout="block">
+					<h:panelGroup layout="block" style="text-align: right;">
+						<p:commandButton style="height:20px; font-size:70%;"
+							value="Reload Auction List" id="reloadAuctions"
+							update="auctionsTable">
+						</p:commandButton>
+					</h:panelGroup>
+					<p:dataTable id="auctionsTable" var="auctionRow"
+						value="#{listAuctions.auctionDetailsList}">
+						<f:facet name="header">
+	         		    	      Your auctions
+	      	     		</f:facet>
+						<p:column sortBy="category" headerText="Category">
+							<h:outputText value="#{auctionRow.category}" />
+						</p:column>
+
+						<p:column sortBy="auctionId" headerText="AuctionId">
+							<p:commandLink update=":homeForm:peerTable,:homeForm:remoteTable"
+								value="#{auctionRow.displayString}"
+								actionListener="#{auctionViewer.populateWinnerList1}">
+								<f:attribute name="timeStamp" value="#{auctionRow.auctionId}" />
+							</p:commandLink>
+
+						</p:column>
+
+					</p:dataTable>
+				</h:panelGroup>
+			</p:layoutUnit>
+			<p:layoutUnit position="center" id="ctrLayout">
+				<p:messages id="messages">
+					<p:effect type="pulsate" event="load" delay="200" />
+				</p:messages>
+				<p:dataTable id="peerTable" var="localRow"
+					value="#{auctionViewer.localWinners}" paginator="true" rows="5"
+					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15">
+					<f:facet name="header">
+						<h:outputText
+							value="Listings results for #{auctionViewer.auctionDisplayHeaderKey}" />
+					</f:facet>
+
+					<p:column sortBy="name" headerText="Name">
+						<h:outputText value="#{localRow.name}" />
+					</p:column>
+
+					<p:column sortBy="model" headerText="Model">
+						<h:outputText value="#{localRow.model}" />
+					</p:column>
+
+					<p:column sortBy="address" headerText="Address">
+						<h:outputText value="#{localRow.address}" />
+					</p:column>
+
+					<p:column sortBy="image" headerText="Image"
+						style="text-align: center">
+						<h:graphicImage library="images" name="#{localRow.image}"
+							width="100" height="100" />
+					</p:column>
+
+					<p:column sortBy="price" headerText="Price">
+						<h:outputText value="#{localRow.price}" />
+					</p:column>
+					<p:column headerText="Claim deal" style="text-align: center">
+						<p:commandButton value="Claim this deal !!!"
+							update=":homeForm:messages"
+							actionListener="#{auctionViewer.claimAuction(localRow)}" />
+					</p:column>
+				</p:dataTable>
+				<p:spacer height="20" />
+				<p:dataTable id="remoteTable" var="remoteRow"
+					value="#{auctionViewer.remoteWinners}" paginator="true" rows="5"
+					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15">
+					<f:facet name="header">
+						<h:outputText
+							value="Corporate sellers results for #{auctionViewer.auctionDisplayHeaderKey}" />
+
+					</f:facet>
+
+					<p:column sortBy="name" headerText="Name">
+						<h:outputText value="#{remoteRow.name}" />
+					</p:column>
+
+					<p:column sortBy="address" headerText="Website">
+						<h:outputLink value="#{remoteRow.address}" target="_blank">
+							<h:outputText value="#{remoteRow.address}" />
+						</h:outputLink>
+					</p:column>
+
+					<p:column sortBy="image" headerText="Image"
+						style="text-align: center">
+						<h:graphicImage library="images" name="#{remoteRow.image}"
+							width="100" height="100" />
+					</p:column>
+
+					<p:column sortBy="price" headerText="Price">
+						<h:outputText value="#{remoteRow.price}" />
+					</p:column>
+					<p:column headerText="Claim deal" style="text-align: center">
+						<p:commandButton style="float:center;" value="Claim this deal !!!"
+							update=":homeForm:messages"
+							actionListener="#{auctionViewer.claimAuction(remoteRow)}" />
+					</p:column>
+				</p:dataTable>
+				<p:commandButton style="float:left;"
+					actionListener="#{auctionViewer.claimSubscriptionAuction}"
+					update=":homeForm:messages" value="Subscribe" />
+				<p:commandButton style="float:right;height:20px; font-size:70%;"
+					actionListener="#{auctionViewer.clearResults}"
+					update="peerTable,remoteTable" value="Clear results" />
+			</p:layoutUnit>
+		</p:layout>
+	</h:form>
+</h:body>
+</html>
